@@ -45,7 +45,7 @@ class BruteManager():
             sleep(0.5)
         sleep(1)
 
-    def worker(self, function: function, *args, **kwargs):
+    def worker(self, function, *args, **kwargs):
         while True:
             with lock:
                 if len(self.allItems) > 0:
@@ -57,8 +57,7 @@ class BruteManager():
 
             while True:
                 try:
-                    success = function(*args, 
-                                       **kwargs)
+                    success = function(item, *args, **kwargs)
                     with lock:
                         self.checked += 1
                         if success:
@@ -99,9 +98,11 @@ class BruteManager():
                 with lock:
                     self.retries += 1
 
-    def start(self, threadCount):
-        threads = [Thread(target=self.worker)
-                   for i in range(min(threadCount, self.totalitems))]
+    def start(self, threadCount, function, *args, **kwargs):
+        threads = [Thread(target=self.worker,
+                   args=(function, *args),
+                   kwargs=kwargs)
+                   for i in range(threadCount)]
         threads.append(Thread(target=self.timer))
         [i.start() for i in threads]
         [i.join() for i in threads]        
@@ -109,5 +110,5 @@ class BruteManager():
     
     def dprint(self, x):
         with lock:
-            if debugMode:
+            if self.debugMode:
                 print(x)
