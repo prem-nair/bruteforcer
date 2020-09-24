@@ -108,5 +108,6 @@ class BruteManager():
 
     
     def dprint(self, x):
-        if debugMode:
-            print(x)
+        with lock:
+            if debugMode:
+                print(x)
